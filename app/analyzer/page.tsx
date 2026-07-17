@@ -2,7 +2,6 @@
 
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { ProtectedFeature } from '@/components/protected-feature';
 import { SkeletonCard } from '@/components/loading-skeleton';
 import { analyzerSchema } from '@/lib/schemas';
 import { generateAICommentary, generateSatiricalResponse, calculateGreedScore, calculateToxicityIndex, calculateIslamicEthicsScore, calculateHumanityScore } from '@/lib/calculations';
@@ -130,7 +129,6 @@ export default function AnalyzerPage() {
       <Navbar />
 
       <main className="flex-1">
-        <ProtectedFeature featureName="Rishta Analyzer">
           <section className="py-20">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
@@ -308,7 +306,6 @@ export default function AnalyzerPage() {
               </div>
             </div>
           </section>
-        </ProtectedFeature>
       </main>
 
       <Footer />

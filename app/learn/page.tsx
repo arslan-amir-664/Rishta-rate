@@ -8,7 +8,7 @@ import { ArrowRight, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-const categories = ['All', 'Legal', 'Finance', 'Negotiation', 'Psychology', 'Culture'];
+const categories = ['All', 'Legal', 'Finance', 'Psychology', 'Culture'];
 
 const container = {
   hidden: { opacity: 0 },
@@ -34,7 +34,9 @@ export default function LearnPage() {
       : mockLearnTopics.filter((topic) => topic.category === selectedCategory);
 
   const handleReadMore = (topic: any) => {
-    toast.success(`Loading: ${topic.title}`);
+    if (topic.url) {
+      window.open(topic.url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -104,8 +106,11 @@ export default function LearnPage() {
                   </h3>
 
                   <p className="text-sm text-muted-foreground mb-4">
-                    Deep dive into {topic.title.toLowerCase()} with expert insights and practical tips.
+                    {topic.description}
                   </p>
+                  {topic.readTime && (
+                    <p className="text-xs text-muted-foreground mb-2">{topic.readTime}</p>
+                  )}
 
                   <div className="flex items-center gap-2 text-primary text-sm font-medium group-hover:gap-3 transition-all">
                     Read Article

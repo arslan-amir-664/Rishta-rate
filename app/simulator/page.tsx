@@ -2,7 +2,6 @@
 
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { ProtectedFeature } from '@/components/protected-feature';
 import { StatisticsCard } from '@/components/statistics-card';
 import { formatPKR, estimateWeddingCost, calculateDownPayment, calculateRecoveryImpact } from '@/lib/calculations';
 import { motion } from 'framer-motion';
@@ -36,7 +35,6 @@ export default function SimulatorPage() {
       <Navbar />
 
       <main className="flex-1">
-        <ProtectedFeature featureName="Financial Simulator">
           <section className="py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
@@ -221,7 +219,6 @@ export default function SimulatorPage() {
               </motion.div>
             </div>
           </section>
-        </ProtectedFeature>
       </main>
 
       <Footer />

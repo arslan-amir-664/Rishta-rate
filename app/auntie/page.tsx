@@ -2,7 +2,6 @@
 
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { ProtectedFeature } from '@/components/protected-feature';
 import { SkeletonCard } from '@/components/loading-skeleton';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
@@ -89,7 +88,7 @@ export default function AuntieChatsPage() {
       <Navbar />
 
       <main className="flex-1">
-        <ProtectedFeature featureName="AI Auntie Chat">
+        
           <section className="py-20">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-[calc(100vh-200px)]">
               <motion.div
@@ -183,7 +182,6 @@ export default function AuntieChatsPage() {
               </motion.div>
             </div>
           </section>
-        </ProtectedFeature>
       </main>
 
       <Footer />

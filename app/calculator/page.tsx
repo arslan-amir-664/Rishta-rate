@@ -1,12 +1,19 @@
 'use client';
 
+import { PROFESSIONS } from '@/lib/professions';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { ProtectedFeature } from '@/components/protected-feature';
 import { ScoreMeter } from '@/components/score-meter';
 import { calculatorSchema } from '@/lib/schemas';
+import {
+  FURNITURE_ITEMS,
+  ELECTRONICS_ITEMS,
+  JEWELRY_QUANTITY_ITEMS,
+  JEWELRY_FIXED_ITEMS,
+  VEHICLE_ITEMS,
+  DOWRY_CATEGORIES,
+} from '@/lib/dowry-items';
 import { calculateGreedScore, calculateHumanityScore, calculateToxicityIndex, calculateIslamicEthicsScore, formatPKR, generateShareableQuote, generateAICommentary, generateSatiricalResponse } from '@/lib/calculations';
-import { useAuth } from '@/lib/auth-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
 import { ArrowRight, Trash2, Plus } from 'lucide-react';
@@ -18,18 +25,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-interface DowryItem {
-  id: string;
-  name: string;
-  value: number;
-}
-
 export default function CalculatorPage() {
-  const { setCalculatorResult } = useAuth();
+  //const { setCalculatorResult } = useAuth();
   const [results, setResults] = useState<any>(null);
-  const [dowryItems, setDowryItems] = useState<DowryItem[]>([]);
-  const [newItemName, setNewItemName] = useState('');
-  const [newItemValue, setNewItemValue] = useState('');
+  const [selectedFurniture, setSelectedFurniture] = useState<string[]>([]);
+  const [selectedElectronics, setSelectedElectronics] = useState<string[]>([]);
+  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
+  const [goldTola, setGoldTola] = useState<number>(0);
+  const [selectedJewelryFixed, setSelectedJewelryFixed] = useState<string[]>([]);
+  const [cashAmount, setCashAmount] = useState<number>(0);
+  const [propertyAmount, setPropertyAmount] = useState<number>(0);
+  const [brideEmploymentStatus, setBrideEmploymentStatus] = useState('not-employed');
 
   const form = useForm({
     resolver: zodResolver(calculatorSchema),
@@ -38,45 +44,81 @@ export default function CalculatorPage() {
       groomAge: 25,
       groomBackground: 'middle-class',
       groomIncome: 0,
+      groomProfession: '',
+      brideFatherIncome: 0,
+      brideEmploymentStatus: 'not-employed',
+      brideProfession: '',
       dowryAmount: 0,
       dowryDetails: [],
     },
   });
+  console.log(form.formState.errors);
 
-  const totalDowryFromItems = dowryItems.reduce((sum, item) => sum + item.value, 0);
-
-  const addDowryItem = () => {
-    if (!newItemName.trim() || !newItemValue.trim()) {
-      toast.error('Please enter both item name and value');
-      return;
+  const toggleSelection = (list: string[], setList: (v: string[]) => void, id: string) => {
+    if (list.includes(id)) {
+      setList(list.filter((i) => i !== id));
+    } else {
+      setList([...list, id]);
     }
-    const value = parseFloat(newItemValue);
-    if (isNaN(value) || value < 0) {
-      toast.error('Please enter a valid amount');
-      return;
-    }
-    setDowryItems([...dowryItems, { id: Date.now().toString(), name: newItemName, value }]);
-    setNewItemName('');
-    setNewItemValue('');
-    toast.success('Item added');
   };
 
-  const removeDowryItem = (id: string) => {
-    setDowryItems(dowryItems.filter(item => item.id !== id));
-  };
+  const furnitureTotal = FURNITURE_ITEMS
+    .filter((i) => selectedFurniture.includes(i.id))
+    .reduce((sum, i) => sum + i.price, 0);
+
+  const electronicsTotal = ELECTRONICS_ITEMS
+    .filter((i) => selectedElectronics.includes(i.id))
+    .reduce((sum, i) => sum + i.price, 0);
+
+  const vehicleTotal = VEHICLE_ITEMS
+    .filter((i) => selectedVehicles.includes(i.id))
+    .reduce((sum, i) => sum + i.price, 0);
+
+  const goldTotal = goldTola * JEWELRY_QUANTITY_ITEMS[0].unitPrice;
+
+  const jewelryFixedTotal = JEWELRY_FIXED_ITEMS
+    .filter((i) => selectedJewelryFixed.includes(i.id))
+    .reduce((sum, i) => sum + i.price, 0);
+
+  const jewelryTotal = goldTotal + jewelryFixedTotal;
+
+  const totalDowryFromItems =
+    furnitureTotal + electronicsTotal + vehicleTotal + jewelryTotal + cashAmount + propertyAmount;
+
+  const selectedDowryItemsList = [
+    ...FURNITURE_ITEMS.filter((i) => selectedFurniture.includes(i.id)).map((i) => ({ name: i.name, value: i.price })),
+    ...ELECTRONICS_ITEMS.filter((i) => selectedElectronics.includes(i.id)).map((i) => ({ name: i.name, value: i.price })),
+    ...VEHICLE_ITEMS.filter((i) => selectedVehicles.includes(i.id)).map((i) => ({ name: i.name, value: i.price })),
+    ...(goldTola > 0 ? [{ name: `Gold (${goldTola} tola)`, value: goldTotal }] : []),
+    ...JEWELRY_FIXED_ITEMS.filter((i) => selectedJewelryFixed.includes(i.id)).map((i) => ({ name: i.name, value: i.price })),
+    ...(cashAmount > 0 ? [{ name: 'Cash', value: cashAmount }] : []),
+    ...(propertyAmount > 0 ? [{ name: 'Property', value: propertyAmount }] : []),
+  ];
 
   const onSubmit = async (data: any) => {
     try {
-      const finalDowryAmount = totalDowryFromItems > 0 ? totalDowryFromItems : data.dowryAmount;
-      
+      const finalDowryAmount = totalDowryFromItems;
+
       if (finalDowryAmount === 0) {
-        toast.error('Please enter dowry amount or add dowry items');
+        toast.error('Please select at least one dowry item, gold, cash, or property amount');
         return;
       }
 
-      const greedScore = calculateGreedScore(finalDowryAmount, data.groomBackground);
-      const humanityScore = calculateHumanityScore(finalDowryAmount, data.dowryDetails || []);
-      const toxicityScore = calculateToxicityIndex(greedScore, finalDowryAmount);
+      const greedScore = calculateGreedScore(
+        finalDowryAmount,
+        data.groomBackground,
+        data.groomIncome,
+        data.brideFatherIncome,
+        data.brideEmploymentStatus
+      );
+      const humanityScore = calculateHumanityScore(
+        finalDowryAmount,
+        data.dowryDetails || [],
+        data.brideEmploymentStatus,
+        data.brideFatherIncome,
+        data.groomIncome
+      );
+      const toxicityScore = calculateToxicityIndex(greedScore, humanityScore);
       const islamicScore = calculateIslamicEthicsScore(greedScore, humanityScore);
 
       const aiCommentary = generateAICommentary(greedScore, humanityScore, toxicityScore);
@@ -85,13 +127,17 @@ export default function CalculatorPage() {
 
       const resultData = {
         groomName: data.groomName,
+        groomProfession: data.groomProfession,
+        brideFatherIncome: data.brideFatherIncome,
+        brideEmploymentStatus: data.brideEmploymentStatus,
+        brideProfession: data.brideProfession,
         greedScore: Math.round(greedScore),
         humanityScore: Math.round(humanityScore),
         toxicityScore: Math.round(toxicityScore),
         islamicEthicsScore: Math.round(islamicScore),
         dowryAmount: finalDowryAmount,
         dowryFormatted: formatPKR(finalDowryAmount),
-        dowryItems,
+        dowryItems: selectedDowryItemsList,
         aiCommentary,
         satiricalResponse,
         quote,
@@ -99,8 +145,9 @@ export default function CalculatorPage() {
       };
 
       setResults(resultData);
-      setCalculatorResult(resultData);
+      localStorage.setItem('calculatorResult', JSON.stringify(resultData));
       toast.success('Your reality check is ready!');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       toast.error('Error calculating scores');
     }
@@ -111,7 +158,7 @@ export default function CalculatorPage() {
       <Navbar />
 
       <main className="flex-1">
-        <ProtectedFeature featureName="Dowry Calculator">
+        
           <section className="py-20">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <motion.div
@@ -184,87 +231,216 @@ export default function CalculatorPage() {
                       className="bg-input border-border/50 text-foreground placeholder:text-muted-foreground mt-1"
                     />
                   </div>
-
                   <div>
-                    <Label htmlFor="dowryAmount" className="text-foreground">Total Dowry Amount (PKR)</Label>
-                    <Input
-                      id="dowryAmount"
-                      type="number"
-                      placeholder="e.g., 5000000"
-                      value={totalDowryFromItems > 0 ? totalDowryFromItems : form.watch('dowryAmount')}
-                      onChange={(e) => form.setValue('dowryAmount', parseFloat(e.target.value) || 0)}
-                      className="bg-input border-border/50 text-foreground placeholder:text-muted-foreground mt-1"
-                    />
-                    {totalDowryFromItems > 0 && (
-                      <p className="text-xs text-primary mt-1">From items: {formatPKR(totalDowryFromItems)}</p>
+                    <Label htmlFor="groomProfession" className="text-foreground">Groom's Profession</Label>
+                    <select
+                      {...form.register('groomProfession')}
+                      className="w-full px-3 py-2 bg-input border border-border/50 rounded-md text-foreground mt-1"
+                    >
+                      <option value="">Select Profession</option>
+                      {PROFESSIONS.map((prof) => (
+                        <option key={prof} value={prof}>{prof}</option>
+                      ))}
+                    </select>
+                    {form.formState.errors.groomProfession && (
+                      <p className="text-xs text-destructive mt-1">{form.formState.errors.groomProfession.message}</p>
                     )}
                   </div>
 
-                  {/* Add Dowry Items Section */}
+                  {/* Bride & Family Details Section */}
                   <div className="border-t border-border/50 pt-6 mt-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Add Dowry Items</h3>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label htmlFor="itemName" className="text-sm text-muted-foreground">Item Name</Label>
-                          <Input
-                            id="itemName"
-                            placeholder="e.g., Car"
-                            value={newItemName}
-                            onChange={(e) => setNewItemName(e.target.value)}
-                            className="bg-input border-border/50 text-foreground placeholder:text-muted-foreground mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="itemValue" className="text-sm text-muted-foreground">Value (PKR)</Label>
-                          <Input
-                            id="itemValue"
-                            type="number"
-                            placeholder="e.g., 4000000"
-                            value={newItemValue}
-                            onChange={(e) => setNewItemValue(e.target.value)}
-                            className="bg-input border-border/50 text-foreground placeholder:text-muted-foreground mt-1"
-                          />
-                        </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Bride & Family Details</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="brideFatherIncome" className="text-foreground">Bride's Father's Monthly Income (PKR)</Label>
+                        <Input
+                          id="brideFatherIncome"
+                          type="number"
+                          placeholder="e.g., 100000"
+                          {...form.register('brideFatherIncome', { valueAsNumber: true })}
+                          className="bg-input border-border/50 text-foreground placeholder:text-muted-foreground mt-1"
+                        />
                       </div>
-                      <Button
-                        type="button"
-                        onClick={addDowryItem}
-                        variant="outline"
-                        className="w-full border-border/50 hover:bg-muted"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Item
-                      </Button>
 
-                      {/* Items List */}
-                      {dowryItems.length > 0 && (
-                        <div className="mt-4 space-y-2">
-                          {dowryItems.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                              <div>
-                                <p className="text-sm font-medium text-foreground">{item.name}</p>
-                                <p className="text-xs text-muted-foreground">{formatPKR(item.value)}</p>
-                              </div>
-                              <button
-                                onClick={() => removeDowryItem(item.id)}
-                                className="p-2 rounded hover:bg-destructive/20 text-destructive transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
+                      <div>
+                        <Label htmlFor="brideEmploymentStatus" className="text-foreground">Bride's Employment Status</Label>
+                        <select
+                          {...form.register('brideEmploymentStatus')}
+                          onChange={(e) => {
+                            form.setValue('brideEmploymentStatus', e.target.value as any);
+                            setBrideEmploymentStatus(e.target.value);
+                          }}
+                          className="w-full px-3 py-2 bg-input border border-border/50 rounded-md text-foreground mt-1"
+                        >
+                          <option value="not-employed">Not Employed / Housewife</option>
+                          <option value="student">Student</option>
+                          <option value="job">Employed (Job)</option>
+                          <option value="business">Business Owner</option>
+                        </select>
+                      </div>
+
+                      {(brideEmploymentStatus === 'job' || brideEmploymentStatus === 'business') && (
+                        <div>
+                          <Label htmlFor="brideProfession" className="text-foreground">Bride's Profession</Label>
+                          <select
+                            {...form.register('brideProfession')}
+                            className="w-full px-3 py-2 bg-input border border-border/50 rounded-md text-foreground mt-1"
+                          >
+                            <option value="">Select Profession</option>
+                            {PROFESSIONS.map((prof) => (
+                              <option key={prof} value={prof}>{prof}</option>
+                            ))}
+                          </select>
                         </div>
                       )}
                     </div>
                   </div>
+
+                
+                  {/* Add Dowry Items Section */}
+                  <div className="border-t border-border/50 pt-6 mt-6">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Select Dowry Items</h3>
+
+                    {/* Furniture */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Furniture</h4>
+                      <div className="space-y-2">
+                        {FURNITURE_ITEMS.map((item) => (
+                          <label key={item.id} className="flex items-center justify-between p-2 bg-muted rounded-lg cursor-pointer">
+                            <span className="flex items-center gap-2 text-sm text-foreground">
+                              <input
+                                type="checkbox"
+                                checked={selectedFurniture.includes(item.id)}
+                                onChange={() => toggleSelection(selectedFurniture, setSelectedFurniture, item.id)}
+                              />
+                              {item.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{formatPKR(item.price)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Electronics */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Electronics</h4>
+                      <div className="space-y-2">
+                        {ELECTRONICS_ITEMS.map((item) => (
+                          <label key={item.id} className="flex items-center justify-between p-2 bg-muted rounded-lg cursor-pointer">
+                            <span className="flex items-center gap-2 text-sm text-foreground">
+                              <input
+                                type="checkbox"
+                                checked={selectedElectronics.includes(item.id)}
+                                onChange={() => toggleSelection(selectedElectronics, setSelectedElectronics, item.id)}
+                              />
+                              {item.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{formatPKR(item.price)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Jewelry */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Jewelry</h4>
+                      <div className="space-y-2">
+                        <div className="p-2 bg-muted rounded-lg">
+                          <Label htmlFor="goldTola" className="text-sm text-foreground">Gold (tola)</Label>
+                          <Input
+                            id="goldTola"
+                            type="number"
+                            min={0}
+                            placeholder="e.g., 5"
+                            value={goldTola || ''}
+                            onChange={(e) => setGoldTola(parseFloat(e.target.value) || 0)}
+                            className="bg-input border-border/50 text-foreground mt-1"
+                          />
+                          {goldTola > 0 && (
+                            <p className="text-xs text-primary mt-1">{formatPKR(goldTotal)}</p>
+                          )}
+                        </div>
+                        {JEWELRY_FIXED_ITEMS.map((item) => (
+                          <label key={item.id} className="flex items-center justify-between p-2 bg-muted rounded-lg cursor-pointer">
+                            <span className="flex items-center gap-2 text-sm text-foreground">
+                              <input
+                                type="checkbox"
+                                checked={selectedJewelryFixed.includes(item.id)}
+                                onChange={() => toggleSelection(selectedJewelryFixed, setSelectedJewelryFixed, item.id)}
+                              />
+                              {item.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{formatPKR(item.price)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Vehicle */}
+                    <div className="mb-6">
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Vehicle</h4>
+                      <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        {VEHICLE_ITEMS.map((item) => (
+                          <label key={item.id} className="flex items-center justify-between p-2 bg-muted rounded-lg cursor-pointer">
+                            <span className="flex items-center gap-2 text-sm text-foreground">
+                              <input
+                                type="checkbox"
+                                checked={selectedVehicles.includes(item.id)}
+                                onChange={() => toggleSelection(selectedVehicles, setSelectedVehicles, item.id)}
+                              />
+                              {item.name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{formatPKR(item.price)}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Cash */}
+                    <div className="mb-6">
+                      <Label htmlFor="cashAmount" className="text-foreground">Cash (PKR)</Label>
+                      <Input
+                        id="cashAmount"
+                        type="number"
+                        min={0}
+                        placeholder="e.g., 500000"
+                        value={cashAmount || ''}
+                        onChange={(e) => setCashAmount(parseFloat(e.target.value) || 0)}
+                        className="bg-input border-border/50 text-foreground placeholder:text-muted-foreground mt-1"
+                      />
+                    </div>
+
+                    {/* Property */}
+                    <div className="mb-2">
+                      <Label htmlFor="propertyAmount" className="text-foreground">Property (PKR)</Label>
+                      <Input
+                        id="propertyAmount"
+                        type="number"
+                        min={0}
+                        placeholder="e.g., 5000000"
+                        value={propertyAmount || ''}
+                        onChange={(e) => setPropertyAmount(parseFloat(e.target.value) || 0)}
+                        className="bg-input border-border/50 text-foreground placeholder:text-muted-foreground mt-1"
+                      />
+                    </div>
+
+                    {/* Total Dowry Amount - read only, auto-calculated */}
+                    <div className="border-t border-border/50 pt-4">
+                      <Label className="text-foreground">Total Dowry Amount (PKR)</Label>
+                      <div className="mt-1 px-3 py-2 bg-muted border border-border/50 rounded-md text-foreground font-semibold">
+                        {formatPKR(totalDowryFromItems)}
+                      </div>
+                    </div>
+                  </div>
+
+                  
 
                   <Button
                     type="submit"
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-6"
                     disabled={form.formState.isSubmitting}
                   >
-                    {form.formState.isSubmitting ? 'Calculating...' : 'Calculate Reality Score'}
+                    {form.formState.isSubmitting ? 'Calculating...' : 'What Groom Should Get 😈'}
                   </Button>
                 </form>
               </motion.div>
@@ -318,7 +494,11 @@ export default function CalculatorPage() {
                       <div className="p-3 bg-muted rounded-lg">
                         <p className="text-sm text-muted-foreground">Affordability Warning</p>
                         <p className={`font-semibold ${results.greedScore > 80 ? 'text-destructive' : results.greedScore > 50 ? 'text-yellow-500' : 'text-green-500'}`}>
-                          {results.greedScore > 80 ? 'SEVERE' : results.greedScore > 50 ? 'MODERATE' : 'LOW'}
+                          {results.greedScore >= 90 ? '🚨 EXTREME — Bhai ye toh looting hai!' :
+                            results.greedScore >= 75 ? '🔴 SEVERE — Larki ke baap ko doctor dikhao' :
+                            results.greedScore >= 55 ? '🟠 HIGH — Thoda zyada ho gaya yaar' :
+                            results.greedScore >= 35 ? '🟡 MODERATE — Chalta hai, bas barely' :
+                            '🟢 LOW — MashAllah, decent insaan lag raha hai'}
                         </p>
                       </div>
                     </div>
@@ -345,8 +525,8 @@ export default function CalculatorPage() {
                     <div className="border-t border-border/50 pt-6 mb-6">
                       <h3 className="text-lg font-semibold text-foreground mb-3">Dowry Breakdown</h3>
                       <div className="space-y-2">
-                        {results.dowryItems.map((item: DowryItem) => (
-                          <div key={item.id} className="flex justify-between p-2 bg-muted rounded">
+                        {results.dowryItems.map((item: { name: string; value: number }, idx: number) => (
+                          <div key={idx} className="flex justify-between p-2 bg-muted rounded">
                             <span className="text-foreground">{item.name}</span>
                             <span className="font-semibold text-primary">{formatPKR(item.value)}</span>
                           </div>
@@ -381,7 +561,6 @@ export default function CalculatorPage() {
             )}
             </div>
           </section>
-        </ProtectedFeature>
       </main>
 
       <Footer />

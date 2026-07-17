@@ -39,7 +39,7 @@ export function ScoreMeter({ score, label, color, size = 'md' }: ScoreMeterProps
   const config = sizeMap[size];
   const colors = colorMap[color];
   const circumference = 2 * Math.PI * config.radius;
-  const offset = circumference - (displayScore / 10) * circumference;
+  const offset = circumference - (displayScore / 100) * circumference;
 
   useEffect(() => {
     let animationId: NodeJS.Timeout;
@@ -98,7 +98,7 @@ export function ScoreMeter({ score, label, color, size = 'md' }: ScoreMeterProps
           >
             {displayScore.toFixed(1)}
           </motion.div>
-          <div className="text-xs text-muted-foreground">/10</div>
+          <div className="text-xs text-muted-foreground">/100</div>
         </div>
       </div>
       <div className="text-center">
