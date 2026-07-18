@@ -4,10 +4,9 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 interface Message {
   id: string;
@@ -15,8 +14,6 @@ interface Message {
   content: string;
   timestamp: Date;
 }
-
-
 
 export default function AuntieChatsPage() {
   const [messages, setMessages] = useState<Message[]>([
@@ -29,6 +26,11 @@ export default function AuntieChatsPage() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
@@ -78,107 +80,105 @@ export default function AuntieChatsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="flex flex-col bg-background" style={{ minHeight: '100dvh' }}>
       <Navbar />
 
-      <main className="flex-1">
-        
-          <section className="py-20">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-[calc(100vh-200px)]">
+      {/* Chat area fills remaining space */}
+      <div className="flex-1 flex flex-col min-h-0 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8" style={{ height: 'calc(100dvh - 140px)' }}>
+
+        {/* Title */}
+        <motion.div
+          className="text-center mb-4 shrink-0"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-1">
+            AI Auntie Chat
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Your sarcastic, brutally honest virtual auntie. No judgment, just truth.
+          </p>
+        </motion.div>
+
+        {/* Chat Box */}
+        <div className="flex-1 flex flex-col min-h-0 rounded-lg bg-card/50 backdrop-blur border border-border/50 overflow-hidden">
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.map((message) => (
               <motion.div
-                className="text-center mb-6"
-                initial={{ opacity: 0, y: 20 }}
+                key={message.id}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">
-                  AI Auntie Chat
-                </h1>
-                <p className="text-muted-foreground">
-                  Your sarcastic, brutally honest virtual auntie. No judgment, just truth.
-                </p>
+                <div
+                  className={`max-w-[80%] sm:max-w-md px-4 py-3 rounded-lg text-sm ${
+                    message.role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-br-none'
+                      : 'bg-muted text-foreground rounded-bl-none'
+                  }`}
+                >
+                  <p>{message.content}</p>
+                  <p className="text-xs opacity-60 mt-1">
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
               </motion.div>
+            ))}
 
-              {/* Chat Container */}
-              <div className="rounded-lg bg-card/50 backdrop-blur border border-border/50 flex flex-col h-full overflow-hidden">
-                {/* Messages Area */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  {messages.map((message) => (
-                    <motion.div
-                      key={message.id}
-                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-4 py-3 rounded-lg ${
-                          message.role === 'user'
-                            ? 'bg-primary text-primary-foreground rounded-br-none'
-                            : 'bg-muted text-foreground rounded-bl-none'
-                        }`}
-                      >
-                        <p className="text-sm">{message.content}</p>
-                        <p className="text-xs opacity-70 mt-1">
-                          {message.timestamp.toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
-                  {loading && (
-                    <motion.div
-                      className="flex justify-start"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                    >
-                      <div className="space-y-2 p-4 bg-muted rounded-lg rounded-bl-none">
-                        <div className="flex gap-2">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-
-                {/* Input Area */}
-                <div className="border-t border-border/50 p-4">
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Ask your auntie anything..."
-                      className="flex-1 px-4 py-2 bg-input border border-border/50 rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                      disabled={loading}
-                    />
-                    <Button
-                      onClick={handleSend}
-                      disabled={loading || !inputValue.trim()}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                    >
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Disclaimer */}
+            {loading && (
               <motion.div
-                className="mt-4 text-center text-xs text-muted-foreground"
+                className="flex justify-start"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                <p>AI Auntie is for entertainment and perspective. Always seek legal/financial advice from professionals.</p>
+                <div className="p-4 bg-muted rounded-lg rounded-bl-none">
+                  <div className="flex gap-2">
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                </div>
               </motion.div>
-            </div>
-          </section>
-      </main>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
 
-      <Footer />
+          {/* Input */}
+          <div className="shrink-0 border-t border-border/50 p-3">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask your auntie anything..."
+                className="flex-1 px-4 py-2 bg-input border border-border/50 rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                disabled={loading}
+              />
+              <Button
+                onClick={handleSend}
+                disabled={loading || !inputValue.trim()}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 shrink-0"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              AI Auntie is for entertainment only. Seek professional advice for legal/financial matters.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer only on desktop */}
+      <div className="hidden sm:block shrink-0">
+        <Footer />
+      </div>
     </div>
   );
 }
