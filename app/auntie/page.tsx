@@ -2,7 +2,6 @@
 
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { SkeletonCard } from '@/components/loading-skeleton';
 import { motion } from 'framer-motion';
 import { Send } from 'lucide-react';
 import { useState } from 'react';
@@ -17,16 +16,7 @@ interface Message {
   timestamp: Date;
 }
 
-const auntieResponses = [
-  "Beta, rishta and shaadi are two different beasts entirely. Have you thought about what you REALLY want?",
-  "Haye Ram! That dowry amount... let's just say the groom's mother is definitely expecting more. Trust me, I know these things.",
-  "Listen beta, if they're asking for that much, they probably don't deserve it. You know your worth, no?",
-  "Acha, acha, I'll tell you what I told my own daughter: marry for love, negotiate for sanity.",
-  "These days, with dowry and shaadi expenses, it's like they're pricing daughters like real estate! Madness, pure madness.",
-  "Beta, take it from someone who's seen 50 years of weddings: the ones that lasted were the ones where both families respected each other.",
-  "Have you considered just eloping? I'm joking... mostly. But seriously, have a backbone in these negotiations!",
-  "You know what I always say? If the marriage doesn't last, at least the dowry did its job. Use your head!",
-];
+
 
 export default function AuntieChatsPage() {
   const [messages, setMessages] = useState<Message[]>([
@@ -43,34 +33,38 @@ export default function AuntieChatsPage() {
   const handleSend = async () => {
     if (!inputValue.trim()) return;
 
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: inputValue,
+      timestamp: new Date(),
+    };
+
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInputValue('');
+    setLoading(true);
+
     try {
-      setLoading(true);
+      const res = await fetch('/api/auntie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updatedMessages }),
+      });
 
-      // Add user message
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        role: 'user',
-        content: inputValue,
-        timestamp: new Date(),
-      };
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed');
 
-      setMessages((prev) => [...prev, userMessage]);
-      setInputValue('');
-
-      // Simulate AI response with delay
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-
-      const mockResponse = auntieResponses[Math.floor(Math.random() * auntieResponses.length)];
       const auntieMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'auntie',
-        content: mockResponse,
+        content: data.reply,
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, auntieMessage]);
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error('Auntie busy hai abhi, thoda wait karo beta!');
     } finally {
       setLoading(false);
     }
