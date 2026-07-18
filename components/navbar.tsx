@@ -34,7 +34,7 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-8">
               <Link href="/" className="text-foreground hover:text-primary transition-colors text-sm">Home</Link>
               <Link href="/calculator" className="text-foreground hover:text-primary transition-colors text-sm">Calculator</Link>
-              <Link href="/analyzer" className="text-foreground hover:text-primary transition-colors text-sm">Analyzer</Link>
+             {/* <Link href="/analyzer" className="text-foreground hover:text-primary transition-colors text-sm">Analyzer</Link>*/}
               <Link href="/simulator" className="text-foreground hover:text-primary transition-colors text-sm">Financial Simulator</Link>
               <Link href="/auntie" className="text-foreground hover:text-primary transition-colors text-sm">AI Auntie</Link>
               <Link href="/learn" className="text-foreground hover:text-primary transition-colors text-sm">Learn</Link>
@@ -73,7 +73,7 @@ export function Navbar() {
             >
               <Link href="/" className="block px-3 py-2 rounded-lg hover:bg-muted text-foreground transition-colors">Home</Link>
               <Link href="/calculator" className="block px-3 py-2 rounded-lg hover:bg-muted text-foreground transition-colors">Calculator</Link>
-              <Link href="/analyzer" className="block px-3 py-2 rounded-lg hover:bg-muted text-foreground transition-colors">Analyzer</Link>
+              {/*<Link href="/analyzer" className="block px-3 py-2 rounded-lg hover:bg-muted text-foreground transition-colors">Analyzer</Link>*/}
               <Link href="/simulator" className="block px-3 py-2 rounded-lg hover:bg-muted text-foreground transition-colors">Financial Simulator</Link>
               <Link href="/auntie" className="block px-3 py-2 rounded-lg hover:bg-muted text-foreground transition-colors">AI Auntie</Link>
               <Link href="/learn" className="block px-3 py-2 rounded-lg hover:bg-muted text-foreground transition-colors">Learn</Link>

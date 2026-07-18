@@ -147,7 +147,9 @@ export default function CalculatorPage() {
       setResults(resultData);
       localStorage.setItem('calculatorResult', JSON.stringify(resultData));
       toast.success('Your reality check is ready!');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.innerWidth >= 1024) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     } catch (error) {
       toast.error('Error calculating scores');
     }
@@ -497,7 +499,7 @@ export default function CalculatorPage() {
                           {results.greedScore >= 90 ? '🚨 EXTREME — Bhai ye toh looting hai!' :
                             results.greedScore >= 75 ? '🔴 SEVERE — Larki ke baap ko doctor dikhao' :
                             results.greedScore >= 55 ? '🟠 HIGH — Thoda zyada ho gaya yaar' :
-                            results.greedScore >= 35 ? '🟡 MODERATE — Chalta hai, bas barely' :
+                            results.greedScore >= 35 ? '🟡 MODERATE — Itna to chalta hai, bas barely' :
                             '🟢 LOW — MashAllah, decent insaan lag raha hai'}
                         </p>
                       </div>
@@ -555,7 +557,7 @@ export default function CalculatorPage() {
               >
                 <h3 className="text-lg font-semibold text-foreground mb-2">How it works</h3>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
-                  The Greed Score is calculated based on the dowry amount relative to the groom&apos;s income and background. The Humanity Score is based on the dowry amount and family expectations. Both scores are on a scale of 0-10, where 10 is the extreme.
+                  The Greed Score is calculated based on the dowry amount relative to the groom&apos;s income and background. The Humanity Score is based on the dowry amount and family expectations. Both scores are on a scale of 0-100, where 100 is the extreme.
                 </p>
               </motion.div>
             )}

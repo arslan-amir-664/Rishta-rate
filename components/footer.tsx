@@ -22,9 +22,9 @@ export function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Features</h4>
             <ul className="space-y-2">
               <li><Link href="/calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Greed Calculator</Link></li>
-              <li><Link href="/analyzer" className="text-sm text-muted-foreground hover:text-primary transition-colors">AI Analyzer</Link></li>
+              {/*<li><Link href="/analyzer" className="text-sm text-muted-foreground hover:text-primary transition-colors">AI Analyzer</Link></li>*/}
               <li><Link href="/simulator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Financial Simulator</Link></li>
-              <li><Link href="/alternatives" className="text-sm text-muted-foreground hover:text-primary transition-colors">Alternatives</Link></li>
+              {/*<li><Link href="/alternatives" className="text-sm text-muted-foreground hover:text-primary transition-colors">Alternatives</Link></li>*/}
             </ul>
           </div>
 
