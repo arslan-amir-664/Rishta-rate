@@ -55,7 +55,7 @@ export function Footer() {
             © 2025 RishtaRate. A satire. Not legal or financial advice.
           </p>
           <p className="text-center text-xs text-muted-foreground mt-2">
-            Built by <a href="https://www.linkedin.com/in/arslan-amir" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors font-medium">Arslan</a>
+            Built by <a href="https://www.linkedin.com/in/arslan-amir" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors font-medium">Arslan Siddiqui</a>
           </p>
         </div>
       </div>
