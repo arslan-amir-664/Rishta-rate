@@ -22,9 +22,7 @@ export function Footer() {
             <h4 className="font-semibold text-foreground mb-4">Features</h4>
             <ul className="space-y-2">
               <li><Link href="/calculator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Greed Calculator</Link></li>
-              {/*<li><Link href="/analyzer" className="text-sm text-muted-foreground hover:text-primary transition-colors">AI Analyzer</Link></li>*/}
               <li><Link href="/simulator" className="text-sm text-muted-foreground hover:text-primary transition-colors">Financial Simulator</Link></li>
-              {/*<li><Link href="/alternatives" className="text-sm text-muted-foreground hover:text-primary transition-colors">Alternatives</Link></li>*/}
             </ul>
           </div>
 
@@ -34,7 +32,6 @@ export function Footer() {
               <li><Link href="/learn" className="text-sm text-muted-foreground hover:text-primary transition-colors">Learning Center</Link></li>
               <li><Link href="/community" className="text-sm text-muted-foreground hover:text-primary transition-colors">Community Stories</Link></li>
               <li><Link href="/auntie" className="text-sm text-muted-foreground hover:text-primary transition-colors">AI Auntie Chat</Link></li>
-              {/*<li><Link href="/share" className="text-sm text-muted-foreground hover:text-primary transition-colors">Share Generator</Link></li>*/}
             </ul>
           </div>
 
@@ -55,7 +52,10 @@ export function Footer() {
             <span>for sanity</span>
           </div>
           <p className="text-center text-xs text-muted-foreground mt-2">
-            © 2024 RishtaRate. A satire. Not legal or financial advice.
+            © 2025 RishtaRate. A satire. Not legal or financial advice.
+          </p>
+          <p className="text-center text-xs text-muted-foreground mt-2">
+            Built by <a href="https://www.linkedin.com/in/arslan-amir" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors font-medium">Arslan</a>
           </p>
         </div>
       </div>
